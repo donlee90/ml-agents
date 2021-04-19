@@ -72,35 +72,6 @@ class CuriosityModel(object):
             encoded_state_list.append(hidden_visual)
             encoded_next_state_list.append(hidden_next_visual)
 
-        if self.policy.vec_obs_size > 0:
-            # Create the encoder ops for current and next vector input.
-            # Note that these encoders are siamese.
-            # Create input op for next (t+1) vector observation.
-            self.next_vector_in = tf.placeholder(
-                shape=[None, self.policy.vec_obs_size],
-                dtype=tf.float32,
-                name="curiosity_next_vector_observation",
-            )
-
-            encoded_vector_obs = ModelUtils.create_vector_observation_encoder(
-                self.policy.vector_in,
-                self.encoding_size,
-                ModelUtils.swish,
-                2,
-                "curiosity_vector_obs_encoder",
-                False,
-            )
-            encoded_next_vector_obs = ModelUtils.create_vector_observation_encoder(
-                self.next_vector_in,
-                self.encoding_size,
-                ModelUtils.swish,
-                2,
-                "curiosity_vector_obs_encoder",
-                True,
-            )
-            encoded_state_list.append(encoded_vector_obs)
-            encoded_next_state_list.append(encoded_next_vector_obs)
-
         encoded_state = tf.concat(encoded_state_list, axis=1)
         encoded_next_state = tf.concat(encoded_next_state_list, axis=1)
         return encoded_state, encoded_next_state
@@ -158,8 +129,7 @@ class CuriosityModel(object):
         hidden = tf.layers.dense(combined_input, 256, activation=ModelUtils.swish)
         pred_next_state = tf.layers.dense(
             hidden,
-            self.encoding_size
-            * (self.policy.vis_obs_size + int(self.policy.vec_obs_size > 0)),
+            self.encoding_size * self.policy.vis_obs_size,
             activation=None,
         )
         squared_difference = 0.5 * tf.reduce_sum(
