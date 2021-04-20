@@ -72,6 +72,13 @@ class CuriosityModel(object):
             encoded_state_list.append(hidden_visual)
             encoded_next_state_list.append(hidden_next_visual)
 
+        if self.policy.vec_obs_size > 0:
+            self.next_vector_in = tf.placeholder(
+                shape=[None, self.policy.vec_obs_size],
+                dtype=tf.float32,
+                name="curiosity_next_vector_observation"
+            )
+
         encoded_state = tf.concat(encoded_state_list, axis=1)
         encoded_next_state = tf.concat(encoded_next_state_list, axis=1)
         return encoded_state, encoded_next_state
